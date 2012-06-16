@@ -24,7 +24,7 @@ import processing.core.PImage;
  * @author Martin Prout
  */
 public class ProcessingToCF {
-
+private final String VERSION = "0.1";
     private Event event;
     private PApplet parent;
     private PImage source;
@@ -45,6 +45,7 @@ public class ProcessingToCF {
      */
     public ProcessingToCF(PApplet parent) {
         this.parent = parent;
+        this.parent.registerDispose(this);
         this.outFile = parent.sketchPath("out.png");
         this.event = Event.START;
         System.out.println(event);
@@ -169,5 +170,20 @@ public class ProcessingToCF {
         } catch (Exception ex) {
             Logger.getLogger(ProcessingToCF.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    /**
+     * Processing libraries require this, doesn't do much here
+     */
+    public final void dispose() {
+    }
+    
+    /**
+     * Returns library version no, processing libraries require this
+     *
+     * @return
+     */
+    public final String version() {
+        return VERSION;
     }
 }
