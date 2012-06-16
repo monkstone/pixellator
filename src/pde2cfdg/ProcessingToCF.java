@@ -26,7 +26,7 @@ import processing.core.PImage;
  */
 public class ProcessingToCF {
 
-    private final String VERSION = "0.1";
+    private final String VERSION = "0.2";
     private Event event;
     private PApplet parent;
     private PImage source;
@@ -94,7 +94,7 @@ public class ProcessingToCF {
             System.out.println(event);
         }
         setImage(new File(input));
-        writeCFDG();
+        //writeCFDG();
     }
 
     /**
@@ -120,7 +120,7 @@ public class ProcessingToCF {
             cfdgFile = parent.sketchPath("out.cfdg");
             rule = "pde";
         }
-        if (event == Event.SELECTED) {
+        if (event == Event.SELECTED || event == Event.DISPLAY) {
             event = Event.WRITING;
             System.out.println(event);
         }
