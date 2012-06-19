@@ -33,7 +33,8 @@ public class cfdg extends PApplet {
         cfdg = new ProcessingToCF(this);
         cfdg.setDotSize(dotSize);
         cfdg.setPathToCFDG("/home/tux/CF3/cfdg");
-        cfdg.getInput();
+        cfdg.posterize(2);
+        cfdg.getInput();        
         cfdg.writeCFDG();
     }
 
@@ -42,16 +43,11 @@ public class cfdg extends PApplet {
      */
     @Override
     public void draw() {
-        if (cfdg.finished()) {
-            PImage img = loadImage(cfdg.outFile);
-            image(img, 0, 0, img.width, img.height);
-            // background(img); // preferred blows up if image isn't correct size
-          // noLoop();
-        }
+
     }
 
     /**
-     * 
+     * Reset dot size 
      */
     @Override
     public void keyReleased() {

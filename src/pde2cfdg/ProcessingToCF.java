@@ -18,6 +18,7 @@ import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import processing.core.PApplet;
+import processing.core.PConstants;
 import processing.core.PImage;
 
 /**
@@ -30,6 +31,7 @@ public class ProcessingToCF {
     private Event event;
     private PApplet parent;
     private PImage source;
+    private PImage img;
     private int distance = 3;
     private String filename;
     private String name;
@@ -41,6 +43,7 @@ public class ProcessingToCF {
      */
     public String outFile;
     private Process proc = null;
+    private float colorWidth = 0;
 
     /**
      *
@@ -49,6 +52,8 @@ public class ProcessingToCF {
     public ProcessingToCF(PApplet parent) {
         this.parent = parent;
         this.parent.registerDispose(this);
+        this.parent.registerPre(this);
+        this.parent.registerDraw(this);
         this.outFile = parent.sketchPath("out.png");
         this.dataFile = parent.sketchPath("data.cfdg");
         this.event = Event.START;
@@ -80,8 +85,24 @@ public class ProcessingToCF {
         this.name = img.getName();
         event = Event.LOADING;
         this.source = parent.loadImage(this.filename);
+        if (colorWidth > 1.0f && colorWidth < 255.0f) {
+            this.source.filter(PConstants.POSTERIZE, colorWidth);
+        }
+       // this.source.updatePixels();
         this.source.loadPixels();
         System.out.println(event);
+    }
+
+    /**
+     * Set a posterize value to use
+     * @param colorWidth
+     */
+    public void posterize(float colorWidth) {
+        if(colorWidth < 2 || colorWidth > 254){
+            System.err.println("warn: posterize out of range, use values 2 ... 254");
+            System.err.println("\tvalues at the lower end make most sense");
+        }
+        this.colorWidth = colorWidth;
     }
 
     /**
@@ -95,6 +116,24 @@ public class ProcessingToCF {
         }
         setImage(new File(input));
         //writeCFDG();
+    }
+
+    /**
+     * processing pre function callback, before draw
+     */
+    public void pre() {
+        if (finished()) {
+            img = parent.loadImage(outFile);
+        }
+    }
+
+    /**
+     * processing draw function callback, at start of draw
+     */
+    public void draw() {
+        if (finished()) {
+            parent.image(img, 0, 0, img.width, img.height);
+        }
     }
 
     /**
@@ -142,7 +181,7 @@ public class ProcessingToCF {
                     float sz = parent.brightness(pix) * distance;
                     if (sz > 0.03) {
                         cfdg.println(String.format(
-                                "\tdot[x %d y %d s %.2f hue %d sat %.3f b 1]", 
+                                "\tdot[x %d y %d s %.2f hue %d sat %.3f b 1]",
                                 x, -y, sz, Math.round(hu * 360), sat));
                     }
                 }
