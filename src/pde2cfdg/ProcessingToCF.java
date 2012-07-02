@@ -14,7 +14,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import static java.lang.System.out;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import processing.core.PApplet;
@@ -27,7 +30,7 @@ import processing.core.PImage;
  */
 public class ProcessingToCF {
 
-    private final String VERSION = "0.2";
+    private final String VERSION = "0.21";
     private Event event;
     private PApplet parent;
     private PImage source;
@@ -57,7 +60,7 @@ public class ProcessingToCF {
         this.outFile = parent.sketchPath("out.png");
         this.dataFile = parent.sketchPath("data.cfdg");
         this.event = Event.START;
-        System.out.println(event);
+        out.println(event);
     }
 
     /**
@@ -88,19 +91,20 @@ public class ProcessingToCF {
         if (colorWidth > 1.0f && colorWidth < 255.0f) {
             this.source.filter(PConstants.POSTERIZE, colorWidth);
         }
-       // this.source.updatePixels();
+        // this.source.updatePixels();
         this.source.loadPixels();
-        System.out.println(event);
+        out.println(event);
     }
 
     /**
      * Set a posterize value to use
+     *
      * @param colorWidth
      */
     public void posterize(float colorWidth) {
-        if(colorWidth < 2 || colorWidth > 254){
-            System.err.println("warn: posterize out of range, use values 2 ... 254");
-            System.err.println("\tvalues at the lower end make most sense");
+        if (colorWidth < 2 || colorWidth > 254) {
+            out.println("warn: posterize out of range, use values 2 ... 254");
+            out.println("\tvalues at the lower end make most sense");
         }
         this.colorWidth = colorWidth;
     }
@@ -112,7 +116,7 @@ public class ProcessingToCF {
         String input = parent.selectInput();
         if (input != null) {
             event = Event.SELECTED;
-            System.out.println(event);
+            out.println(event);
         }
         setImage(new File(input));
         //writeCFDG();
@@ -161,7 +165,7 @@ public class ProcessingToCF {
         }
         if (event == Event.SELECTED || event == Event.DISPLAY) {
             event = Event.WRITING;
-            System.out.println(event);
+            out.println(event);
         }
         try {
             PrintWriter cfdg = new PrintWriter(new BufferedWriter(new FileWriter(cfdgFile)));
@@ -205,19 +209,26 @@ public class ProcessingToCF {
             //String height = String.format("%d", parent.height);
             String size = String.format("%d", (int) PApplet.max(parent.width, parent.height));
             String[] commands;
-
             commands = new String[]{this.pathToCFDG, "-s", size, "-c", name, "-o", this.outFile};
             //commands = new String[]{this.pathToCFDG, "-w", width, "-h", height, name, "out.png"};
             if (this.event == Event.PROCESSING) {
-                System.out.println(event);
-                proc = Runtime.getRuntime().exec(commands);
+                out.println(event);
+                proc = new ProcessBuilder(commands).start();
+                redirect(proc.getErrorStream());
             }
             if (proc.waitFor() == 0) {
                 this.event = Event.DISPLAY;
-                System.out.println(event);
+                out.println(event);
             }
         } catch (Exception ex) {
             Logger.getLogger(ProcessingToCF.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    static void redirect(InputStream in) throws IOException {
+        int c;
+        while ((c = in.read()) != -1) {
+            out.write((char) c);
         }
     }
 
@@ -225,6 +236,9 @@ public class ProcessingToCF {
      * Processing libraries require this, doesn't do much here
      */
     public final void dispose() {
+        if (proc != null) {
+            proc.destroy();
+        }
     }
 
     /**
