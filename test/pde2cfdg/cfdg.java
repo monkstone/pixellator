@@ -32,9 +32,9 @@ public class cfdg extends PApplet {
         colorMode(HSB, 1.0f);
         cfdg = new ProcessingToCF(this);
         cfdg.setDotSize(dotSize);
-        cfdg.setPathToCFDG("/home/tux/CF3.0/CF3/cfdg");
+        cfdg.setPathToCFDG("/home/tux/CF3/cfdg");
         cfdg.posterize(2);
-        cfdg.getInput();        
+        cfdg.getInput();
         cfdg.writeCFDG();
     }
 
@@ -43,19 +43,20 @@ public class cfdg extends PApplet {
      */
     @Override
     public void draw() {
-
     }
 
     /**
-     * Reset dot size 
+     * Reset dot size
      */
     @Override
     public void keyReleased() {
         switch (key) {
             case 'r':
-                cfdg.setDotSize(dotSize);
-                cfdg.writeCFDG();
-                break;
+                if (cfdg.ready()) {
+                    cfdg.setDotSize(dotSize);
+                    cfdg.writeCFDG();
+                    break;
+                }
             case '1':
             case '2':
             case '3':

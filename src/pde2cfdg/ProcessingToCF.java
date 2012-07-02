@@ -199,6 +199,10 @@ public class ProcessingToCF {
         process(cfdgFile);
     }
 
+    public boolean ready() {
+        return this.event == Event.DISPLAY;
+    }
+
     /**
      *
      * @param name
@@ -225,7 +229,7 @@ public class ProcessingToCF {
         }
     }
 
-    static void redirect(InputStream in) throws IOException {
+    private static void redirect(InputStream in) throws IOException {
         int c;
         while ((c = in.read()) != -1) {
             out.write((char) c);
