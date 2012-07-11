@@ -31,6 +31,7 @@ public class cfdg extends PApplet {
         background(255);
         colorMode(HSB, 1.0f);
         cfdg = new ProcessingToCF(this);
+        //cfdg.toSVG();
         cfdg.setDotSize(dotSize);
         cfdg.setPathToCFDG("/home/tux/CF3/cfdg");
         cfdg.posterize(2);

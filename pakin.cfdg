@@ -1,0 +1,7 @@
+CF::Background = [b -1]
+
+startshape pakin
+
+shape dot{CIRCLE[]}
+
+import data.cfdg

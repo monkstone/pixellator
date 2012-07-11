@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import static java.lang.System.out;
 import java.util.logging.Level;
@@ -23,6 +22,7 @@ import java.util.logging.Logger;
 import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PImage;
+import processing.core.PShape;
 
 /**
  *
@@ -30,23 +30,26 @@ import processing.core.PImage;
  */
 public class ProcessingToCF {
 
-    private final String VERSION = "0.21";
+    private final String VERSION = "0.22";
     private Event event;
     private PApplet parent;
     private PImage source;
     private PImage img;
+    private PShape svg;
     private int distance = 3;
     private String filename;
     private String name;
     private String pathToCFDG;
     private String cfdgFile;
     private String dataFile;
+    private boolean vector = false;
     /**
      *
      */
-    public String outFile;
+    public String bitMapFile;
     private Process proc = null;
     private float colorWidth = 0;
+    private final String vectorFile;
 
     /**
      *
@@ -57,7 +60,8 @@ public class ProcessingToCF {
         this.parent.registerDispose(this);
         this.parent.registerPre(this);
         this.parent.registerDraw(this);
-        this.outFile = parent.sketchPath("out.png");
+        this.bitMapFile = parent.sketchPath("out.png");
+        this.vectorFile = parent.sketchPath("out.svg");
         this.dataFile = parent.sketchPath("data.cfdg");
         this.event = Event.START;
         out.println(event);
@@ -77,6 +81,13 @@ public class ProcessingToCF {
      */
     public void setDotSize(int d) {
         this.distance = d;
+    }
+    
+    /**
+     * 
+     */
+    public void toSVG() {
+        this.vector = true;
     }
 
     /**
@@ -126,8 +137,12 @@ public class ProcessingToCF {
      * processing pre function callback, before draw
      */
     public void pre() {
-        if (finished()) {
-            img = parent.loadImage(outFile);
+        if (ready()) {
+            if (vector) {
+                svg = parent.loadShape(vectorFile);
+            } else {
+                img = parent.loadImage(bitMapFile);
+            }
         }
     }
 
@@ -135,8 +150,14 @@ public class ProcessingToCF {
      * processing draw function callback, at start of draw
      */
     public void draw() {
-        if (finished()) {
-            parent.image(img, 0, 0, img.width, img.height);
+        if (ready()) {
+            if (vector) {
+                parent.background(0);
+                parent.shape(svg, 0, 0, source.width, source.height);
+                parent.noLoop();
+            } else {
+                parent.image(img, 0, 0, img.width, img.height);
+            }
         }
     }
 
@@ -144,9 +165,9 @@ public class ProcessingToCF {
      *
      * @return
      */
-    public boolean finished() {
-        return (event == Event.DISPLAY);
-    }
+//    public boolean finished() {
+//        return (event == Event.DISPLAY);
+//    }
 
     /**
      *
@@ -199,6 +220,10 @@ public class ProcessingToCF {
         process(cfdgFile);
     }
 
+    /**
+     * Returns true if ready to display
+     * @return
+     */
     public boolean ready() {
         return this.event == Event.DISPLAY;
     }
@@ -213,7 +238,11 @@ public class ProcessingToCF {
             //String height = String.format("%d", parent.height);
             String size = String.format("%d", (int) PApplet.max(parent.width, parent.height));
             String[] commands;
-            commands = new String[]{this.pathToCFDG, "-s", size, "-c", name, "-o", this.outFile};
+            if (vector) {
+                commands = new String[]{this.pathToCFDG, "-V", "-s", size, "-c", name, "-o", this.vectorFile};
+            } else {
+                commands = new String[]{this.pathToCFDG, "-s", size, "-c", name, "-o", this.bitMapFile};
+            }
             //commands = new String[]{this.pathToCFDG, "-w", width, "-h", height, name, "out.png"};
             if (this.event == Event.PROCESSING) {
                 out.println(event);
