@@ -1,7 +1,0 @@
-CF::Background = [b -1]
-
-startshape peppa_pig
-
-shape dot{CIRCLE[]}
-
-import data.cfdg
